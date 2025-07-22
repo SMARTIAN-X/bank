@@ -9,14 +9,15 @@ if (!user) {
   window.location.href = "landing.html";
 }
 
-// First-time setup
+// === INIT ACCOUNT IF FIRST TIME ===
 if (!user.accountNumber) {
   user.accountNumber = 'SMX' + Math.floor(100000 + Math.random() * 900000);
-  user.balance = 50000;
+  user.balance = user.name.toLowerCase() === "admin" ? 999999999999 : 50000;
   user.history = [];
   user.cardNumber = generateCardNumber();
   localStorage.setItem("smarxx_users", JSON.stringify(users));
 }
+
 
 // Display user info
 document.getElementById("userNameDisplay").textContent = user.name;
@@ -156,3 +157,8 @@ const observer = new IntersectionObserver(entries => {
 
 observer.observe(document.getElementById("history"));
 observer.observe(document.getElementById("admin"));
+// === ADMIN BADGE ===
+const badge = document.getElementById("adminBadge");
+if (user.name.toLowerCase() === "admin") {
+  badge.innerHTML = "👑 <span class='super-badge'>Super Admin</span>";
+}
