@@ -37,6 +37,7 @@
       <a href="#profile">👤 Profile</a>
       <a href="#transfer">💸 Transfer</a>
       <a href="#loan">🪙 Loan</a>
+      <a href="#bills">💼 Pay Bills</a>
       <a href="#repay">🔁 Repay Loan</a>
       <a href="#history">📜 History</a>
       <a href="#cards">💳 Virtual Cards</a>
@@ -104,6 +105,42 @@
       <button onclick="requestLoan()">Request</button>
       <p id="loanMsg" class="message"></p>
     </section>
+
+   <!-- Bill Payment -->
+<section id="bills" class="section">
+  <h2>Pay Bills</h2>
+
+  <div class="bill-form">
+    <select id="billType">
+      <option value="">-- Select Bill Type --</option>
+      <option value="Airtime">📱 Airtime</option>
+      <option value="Data">🌐 Data</option>
+      <option value="Electricity">💡 Electricity</option>
+      <option value="Internet">🛰️ Internet</option>
+    </select>
+
+    <input type="text" id="billRecipient" placeholder="Phone / Meter / Account Number">
+    <input type="number" id="billAmount" placeholder="Amount (₦)">
+    <button onclick="payBill()">Pay Now</button>
+    <p id="billMsg" class="message"></p>
+  </div>
+
+  <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ccc;">
+
+  <div class="bill-history">
+    <h3>Bill Payment History</h3>
+    <select onchange="filterBills(this.value)">
+      <option value="All">All</option>
+      <option value="Airtime">Airtime</option>
+      <option value="Data">Data</option>
+      <option value="Electricity">Electricity</option>
+      <option value="Internet">Internet</option>
+    </select>
+    <div id="billHistoryList" style="margin-top: 1rem;"></div>
+  </div>
+</section>
+
+
 
     <!-- Repay Loan -->
     <section id="repay" class="section">

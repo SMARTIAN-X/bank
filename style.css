@@ -390,3 +390,21 @@ a {
 .upload-btn:hover {
   background: #003f88;
 }
+.bill-form select,
+.bill-form input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #eaf4fc;
+  box-shadow: inset 2px 2px 5px #cbd6e2, inset -2px -2px 5px #ffffff;
+  font-size: 1rem;
+}
+
+.bill-history select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-weight: bold;
+  background: #f0f0f0;
+}

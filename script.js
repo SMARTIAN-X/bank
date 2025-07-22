@@ -51,6 +51,9 @@ function showSection(id) {
   if (id === "admin" && currentUserName.toLowerCase() === "admin") {
     loadAdminPanel();
   }
+  if (id === "bills") {
+  loadBillHistory();
+}
   if (id === "history") {
     loadHistory();
   }
@@ -269,4 +272,68 @@ document.addEventListener("DOMContentLoaded", () => {
     if (adminVisible) loadAdminPanel();
   }
 });
+function payBill() {
+  const type = document.getElementById("billType").value;
+  const recipient = document.getElementById("billRecipient").value.trim();
+  const amount = parseFloat(document.getElementById("billAmount").value);
+  const msg = document.getElementById("billMsg");
 
+  if (!type || !recipient || isNaN(amount) || amount <= 0) {
+    return showMessage("billMsg", "⚠️ Please fill all fields correctly.");
+  }
+
+  if (type === "Airtime" || type === "Data" || type === "Internet") {
+    const phoneRegex = /^[0-9]{10,14}$/;
+    if (!phoneRegex.test(recipient)) {
+      return showMessage("billMsg", "⚠️ Enter a valid phone/account number.");
+    }
+  }
+
+  if (user.balance < amount) {
+    return showMessage("billMsg", "❌ Insufficient funds.");
+  }
+
+  user.balance -= amount;
+
+  user.history = user.history || [];
+  user.history.push({
+    type: `Bill Payment (${type})`,
+    to: recipient,
+    amount,
+    billType: type,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("smarxx_users", JSON.stringify(users));
+  document.getElementById("balanceDisplay").textContent = user.balance.toLocaleString();
+
+  showMessage("billMsg", `✅ ₦${amount.toLocaleString()} paid for ${type}`);
+  document.getElementById("billRecipient").value = "";
+  document.getElementById("billAmount").value = "";
+  document.getElementById("billType").value = "";
+
+  loadBillHistory(); // update the list
+}
+
+function loadBillHistory(filter = "All") {
+  const list = document.getElementById("billHistoryList");
+  list.innerHTML = "";
+
+  const bills = (user.history || []).filter(tx => tx.type?.startsWith("Bill Payment"));
+  const filtered = filter === "All" ? bills : bills.filter(tx => tx.billType === filter);
+
+  if (filtered.length === 0) {
+    list.innerHTML = "<p>No bill payments found.</p>";
+    return;
+  }
+
+  filtered.reverse().forEach(tx => {
+    const p = document.createElement("p");
+    p.textContent = `${tx.date} – ${tx.billType}: ₦${tx.amount.toLocaleString()} to ${tx.to}`;
+    list.appendChild(p);
+  });
+}
+
+function filterBills(filterType) {
+  loadBillHistory(filterType);
+}
