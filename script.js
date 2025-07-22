@@ -95,6 +95,30 @@ function changePassword() {
   localStorage.setItem("smarxx_users", JSON.stringify(users));
   showMessage("passwordMsg", "✅ Password updated successfully.");
 }
+const profileInput = document.getElementById("profileInput");
+const profileImage = document.getElementById("profileImage");
+
+// Load stored profile picture if exists
+const storedPic = localStorage.getItem(`smarxx_profile_pic_${user.name}`);
+if (storedPic) profileImage.src = storedPic;
+
+// On file upload
+profileInput.addEventListener("change", () => {
+  const file = profileInput.files[0];
+  if (!file || !file.type.startsWith("image/")) {
+    alert("❌ Please select a valid image file.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const imgData = e.target.result;
+    profileImage.src = imgData;
+    localStorage.setItem(`smarxx_profile_pic_${user.name}`, imgData);
+  };
+  reader.readAsDataURL(file);
+});
+
 
 // === SEND MONEY ===
 function sendMoney() {

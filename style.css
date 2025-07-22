@@ -354,3 +354,39 @@ a {
   margin-bottom: 0.8rem;
   color: #0056b3;
 }
+.profile-pic-container {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profile-pic-circle {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #0056b3;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  background: #ddd;
+}
+
+.profile-pic-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #0056b3;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease-in-out;
+}
+
+.upload-btn:hover {
+  background: #003f88;
+}
