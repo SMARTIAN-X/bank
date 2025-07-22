@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome to SMARXX BANK</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #eaf4fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #f9f9f9;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 10px 10px 30px #d1d9e6, -10px -10px 30px #ffffff;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #0056b3;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: #eaf4fc;
+      box-shadow: inset 2px 2px 5px #cbd6e2, inset -2px -2px 5px #ffffff;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      background: #0056b3;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease-in-out;
+    }
+
+    button:hover {
+      background: #003f88;
+    }
+
+    .toggle {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .message {
+      text-align: center;
+      font-size: 0.9rem;
+      color: red;
+      height: 1.2rem;
+      margin-bottom: 1rem;
+      transition: opacity 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2 id="formTitle">Register</h2>
+    <div class="message" id="formMsg"></div>
+
+    <input type="text" id="nameInput" placeholder="Name" />
+    <input type="password" id="passwordInput" placeholder="Password" />
+    <button onclick="handleSubmit()">Register</button>
+
+    <div class="toggle">
+      <span id="toggleText">Already have an account?</span>
+      <a href="#" onclick="toggleForm()"> Login</a>
+    </div>
+  </div>
+
+  <script>
+    let isLogin = false;
+
+    function toggleForm() {
+      isLogin = !isLogin;
+      document.getElementById('formTitle').textContent = isLogin ? "Login" : "Register";
+      document.querySelector('button').textContent = isLogin ? "Login" : "Register";
+      document.getElementById('toggleText').textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+      document.getElementById('formMsg').textContent = '';
+    }
+
+    function handleSubmit() {
+      const name = document.getElementById("nameInput").value.trim();
+      const pass = document.getElementById("passwordInput").value.trim();
+      const msg = document.getElementById("formMsg");
+
+      if (!name || !pass) {
+        msg.textContent = "⚠️ All fields required.";
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem("smarxx_users")) || [];
+
+      if (isLogin) {
+        const existing = users.find(u => u.name === name && u.password === pass);
+        if (existing) {
+          localStorage.setItem("smarxx_loggedIn", name);
+          window.location.href = "index.html";
+        } else {
+          msg.textContent = "❌ Invalid name or password.";
+        }
+      } else {
+        const exists = users.find(u => u.name === name);
+        if (exists) {
+          msg.textContent = "❌ Name already taken.";
+        } else {
+          users.push({ name, password: pass });
+          localStorage.setItem("smarxx_users", JSON.stringify(users));
+          localStorage.setItem("smarxx_loggedIn", name);
+          window.location.href = "index.html";
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>

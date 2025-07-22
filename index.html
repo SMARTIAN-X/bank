@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SMARXX BANK - Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    nav a {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      color: #003366;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      background: #f0f4f9;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <button class="close-btn" onclick="toggleSidebar()">×</button>
+    <nav onclick="toggleSidebar()">
+      <a href="#dashboard">🏠 Dashboard</a>
+      <a href="#profile">👤 Profile</a>
+      <a href="#transfer">💸 Transfer</a>
+      <a href="#loan">🪙 Loan</a>
+      <a href="#history">📜 History</a>
+      <a href="#cards">💳 Virtual Cards</a>
+      <a id="adminPanelBtn" href="#admin">🛠️ Admin Panel</a>
+      <a href="#" onclick="logoutUser()">🚪 Logout</a>
+    </nav>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">🏦 SMARXX BANK</div>
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  </header>
+
+  <!-- User Banner -->
+  <div class="user-banner">
+    Welcome, <span id="userNameDisplay">User</span> 👋
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-container">
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="section">
+      <h1>Dashboard</h1>
+      <p><strong>Account Number:</strong> <span id="accountNumberDisplay"></span></p>
+      <p><strong>Balance:</strong> ₦<span id="balanceDisplay">0</span></p>
+    </section>
+
+    <!-- Profile -->
+    <section id="profile" class="section">
+      <h2>Edit Profile</h2>
+      <input type="text" id="newName" placeholder="New Name">
+      <button onclick="saveNewName()">Save</button>
+      <p id="profileMsg" class="message"></p>
+    </section>
+
+    <!-- Transfer -->
+    <section id="transfer" class="section">
+      <h2>Send Money</h2>
+      <input type="text" id="receiverAccNo" placeholder="Receiver Account Number">
+      <input type="number" id="sendAmount" placeholder="Amount (₦)">
+      <button onclick="sendMoney()">Send</button>
+      <p id="sendMsg" class="message"></p>
+    </section>
+
+    <!-- Loan -->
+    <section id="loan" class="section">
+      <h2>Request Loan</h2>
+      <input type="number" id="loanAmount" placeholder="Loan Amount (₦)">
+      <button onclick="requestLoan()">Request</button>
+      <p id="loanMsg" class="message"></p>
+    </section>
+
+    <!-- History -->
+    <section id="history" class="section">
+      <h2>Transaction History</h2>
+      <div id="historyList"></div>
+    </section>
+
+    <!-- Virtual Cards -->
+    <section id="cards" class="section">
+      <h2>Virtual Card</h2>
+      <div class="card-ui">
+        <p class="bank-name">SMARXX BANK</p>
+        <p class="card-number" id="cardNumber">XXXX XXXX XXXX XXXX</p>
+        <p class="card-holder" id="cardHolder">Cardholder</p>
+        <p class="expiry">Exp: 12/29</p>
+      </div>
+    </section>
+
+    <!-- Admin Panel -->
+    <section id="admin" class="section">
+      <h2>Admin Panel</h2>
+      <div id="adminList"></div>
+    </section>
+
+  </main>
+
+  <!-- Script -->
+  <script src="script.js"></script>
+
+</body>
+</html>
