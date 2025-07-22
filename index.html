@@ -9,20 +9,25 @@
     html {
       scroll-behavior: smooth;
     }
-
     nav a {
       display: block;
       padding: 0.75rem 1.5rem;
       color: #003366;
       font-weight: bold;
     }
-
     nav a:hover {
       background: #f0f4f9;
     }
   </style>
 </head>
 <body>
+
+<script>
+  const loggedIn = localStorage.getItem("smarxx_loggedIn");
+  if (!loggedIn) {
+    window.location.href = "landing.html";
+  }
+</script>
 
   <!-- Sidebar -->
   <div id="sidebar" class="sidebar">
@@ -32,9 +37,10 @@
       <a href="#profile">👤 Profile</a>
       <a href="#transfer">💸 Transfer</a>
       <a href="#loan">🪙 Loan</a>
+      <a href="#repay">🔁 Repay Loan</a>
       <a href="#history">📜 History</a>
       <a href="#cards">💳 Virtual Cards</a>
-      <a id="adminPanelBtn" href="#admin">🛠️ Admin Panel</a>
+      <a id="adminPanelBtn" href="#admin" style="display:none;">🛠️ Admin Panel</a>
       <a href="#" onclick="logoutUser()">🚪 Logout</a>
     </nav>
   </div>
@@ -47,8 +53,8 @@
 
   <!-- User Banner -->
   <div class="user-banner">
- Welcome, <span id="userNameDisplay">User</span> <span id="adminBadge"></span>
- </div>
+    Welcome, <span id="userNameDisplay">User</span> <span id="adminBadge"></span>
+  </div>
 
   <!-- Main Content -->
   <main class="main-container">
@@ -60,13 +66,18 @@
       <p><strong>Balance:</strong> ₦<span id="balanceDisplay">0</span></p>
     </section>
 
-    <!-- Profile -->
-    <section id="profile" class="section">
-      <h2>Edit Profile</h2>
-      <input type="text" id="newName" placeholder="New Name">
-      <button onclick="saveNewName()">Save</button>
-      <p id="profileMsg" class="message"></p>
-    </section>
+<!-- PROFILE SECTION -->
+<section id="profile" class="section">
+  <h2>Edit Profile</h2>
+
+  <!-- Change Name -->
+  <input type="text" id="newName" placeholder="New Name" />
+  <button onclick="saveNewName()">Save Name</button>
+  <p id="profileMsg" class="message"></p>
+
+  <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ccc;">
+
+
 
     <!-- Transfer -->
     <section id="transfer" class="section">
@@ -83,6 +94,15 @@
       <input type="number" id="loanAmount" placeholder="Loan Amount (₦)">
       <button onclick="requestLoan()">Request</button>
       <p id="loanMsg" class="message"></p>
+    </section>
+
+    <!-- Repay Loan -->
+    <section id="repay" class="section">
+      <h2>Repay Loan</h2>
+      <p><strong>Outstanding Loan:</strong> ₦<span id="loanBalance">0</span></p>
+      <input type="number" id="repayAmount" placeholder="Repayment Amount (₦)">
+      <button onclick="repayLoan()">Repay</button>
+      <p id="repayMsg" class="message"></p>
     </section>
 
     <!-- History -->
@@ -103,10 +123,13 @@
     </section>
 
     <!-- Admin Panel -->
-    <section id="admin" class="section">
-      <h2>Admin Panel</h2>
-      <div id="adminList"></div>
-    </section>
+   <section id="admin" class="section hidden"> <!-- Admin Panel -->
+  <h2>Admin Panel</h2>
+  <div id="adminList"></div>
+</section>
+
+<a id="adminPanelBtn" href="#admin" style="display:none;">🛠️ Admin Panel</a>
+
 
   </main>
 

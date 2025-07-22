@@ -1,12 +1,23 @@
-// Load users and logged-in user
+// === GLOBAL ===
 let users = JSON.parse(localStorage.getItem("smarxx_users")) || [];
 const currentUserName = localStorage.getItem("smarxx_loggedIn");
 const user = users.find(u => u.name === currentUserName);
 
-// Redirect if not logged in
+// === SECURITY CHECK ===
 if (!user) {
   alert("You must login first!");
   window.location.href = "landing.html";
+}
+
+// === INIT LOAN BALANCE IF NOT PRESENT ===
+if (user.loanBalance === undefined) {
+  user.loanBalance = 0;
+}
+
+// === SET ADMIN BALANCE IF MISSING/WRONG ===
+if (user.name.toLowerCase() === "admin" && user.balance !== 999999999999) {
+  user.balance = 999999999999;
+  localStorage.setItem("smarxx_users", JSON.stringify(users));
 }
 
 // === INIT ACCOUNT IF FIRST TIME ===
@@ -18,44 +29,84 @@ if (!user.accountNumber) {
   localStorage.setItem("smarxx_users", JSON.stringify(users));
 }
 
-
-// Display user info
+// === UI UPDATES ===
 document.getElementById("userNameDisplay").textContent = user.name;
 document.getElementById("accountNumberDisplay").textContent = user.accountNumber;
 document.getElementById("balanceDisplay").textContent = user.balance.toLocaleString();
+document.getElementById("loanBalance").textContent = user.loanBalance.toLocaleString();
 document.getElementById("cardHolder").textContent = user.name;
-document.getElementById("cardNumber").textContent = user.cardNumber;
+document.getElementById("cardNumber").textContent = user.cardNumber || generateCardNumber();
 
-// Sidebar toggle
+// === SIDEBAR TOGGLE ===
 function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.toggle("open");
+  document.getElementById("sidebar").classList.toggle("open");
 }
 
-// Save new name
+// === SECTION SWITCH ===
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(sec => sec.classList.add("hidden"));
+  const section = document.getElementById(id);
+  if (section) section.classList.remove("hidden");
+
+  if (id === "admin" && currentUserName.toLowerCase() === "admin") {
+    loadAdminPanel();
+  }
+  if (id === "history") {
+    loadHistory();
+  }
+}
+
+// === PROFILE NAME UPDATE ===
 function saveNewName() {
   const newName = document.getElementById("newName").value.trim();
   if (!newName) return showMessage("profileMsg", "⚠️ Name cannot be empty");
 
   user.name = newName;
-  document.getElementById("userNameDisplay").textContent = newName;
-  document.getElementById("cardHolder").textContent = newName;
   localStorage.setItem("smarxx_users", JSON.stringify(users));
   localStorage.setItem("smarxx_loggedIn", newName);
+  document.getElementById("userNameDisplay").textContent = newName;
+  document.getElementById("cardHolder").textContent = newName;
   showMessage("profileMsg", "✅ Name updated!");
 }
 
-// Send money
+// === PASSWORD CHANGE FEATURE ===
+function changePassword() {
+  const current = document.getElementById("currentPassword").value.trim();
+  const newPass = document.getElementById("newPassword").value.trim();
+  const confirm = document.getElementById("confirmPassword").value.trim();
+
+  if (!current || !newPass || !confirm) {
+    return showMessage("passwordMsg", "⚠️ All fields are required.");
+  }
+
+  if (current !== user.password) {
+    return showMessage("passwordMsg", "❌ Current password is incorrect.");
+  }
+
+  if (newPass !== confirm) {
+    return showMessage("passwordMsg", "❌ Passwords do not match.");
+  }
+
+  if (newPass.length < 4) {
+    return showMessage("passwordMsg", "⚠️ Password must be at least 4 characters.");
+  }
+
+  user.password = newPass;
+  localStorage.setItem("smarxx_users", JSON.stringify(users));
+  showMessage("passwordMsg", "✅ Password updated successfully.");
+}
+
+// === SEND MONEY ===
 function sendMoney() {
   const accNo = document.getElementById("receiverAccNo").value.trim();
   const amount = parseFloat(document.getElementById("sendAmount").value);
 
   if (!accNo || isNaN(amount) || amount <= 0) {
-    return showMessage("sendMsg", "⚠️ Invalid input.");
+    return showMessage("sendMsg", "⚠️ Invalid details.");
   }
 
   if (user.balance < amount) {
-    return showMessage("sendMsg", "❌ Insufficient balance.");
+    return showMessage("sendMsg", "❌ Insufficient funds.");
   }
 
   const recipient = users.find(u => u.accountNumber === accNo);
@@ -64,31 +115,66 @@ function sendMoney() {
   user.balance -= amount;
   recipient.balance += amount;
 
-  const now = new Date().toLocaleString();
-  user.history.push({ type: "Sent", to: accNo, amount, date: now });
+  user.history = user.history || [];
   recipient.history = recipient.history || [];
-  recipient.history.push({ type: "Received", from: user.accountNumber, amount, date: now });
+
+  user.history.push({ type: "Sent", to: accNo, amount, date: new Date().toLocaleString() });
+  recipient.history.push({ type: "Received", from: user.accountNumber, amount, date: new Date().toLocaleString() });
 
   localStorage.setItem("smarxx_users", JSON.stringify(users));
   document.getElementById("balanceDisplay").textContent = user.balance.toLocaleString();
-  showMessage("sendMsg", `✅ ₦${amount.toLocaleString()} sent!`);
+  showMessage("sendMsg", `✅ ₦${amount.toLocaleString()} sent to ${recipient.name}`);
 }
 
-// Request loan
+// === REQUEST LOAN ===
 function requestLoan() {
   const amount = parseFloat(document.getElementById("loanAmount").value);
-  if (isNaN(amount) || amount <= 0) return showMessage("loanMsg", "⚠️ Invalid amount.");
+
+  if (isNaN(amount) || amount <= 0) {
+    return showMessage("loanMsg", "⚠️ Invalid loan amount.");
+  }
 
   user.balance += amount;
-  const now = new Date().toLocaleString();
-  user.history.push({ type: "Loan", amount, date: now });
+  user.loanBalance += amount;
+
+  user.history = user.history || [];
+  user.history.push({ type: "Loan", amount, date: new Date().toLocaleString() });
 
   localStorage.setItem("smarxx_users", JSON.stringify(users));
   document.getElementById("balanceDisplay").textContent = user.balance.toLocaleString();
-  showMessage("loanMsg", `✅ Loan of ₦${amount.toLocaleString()} approved!`);
+  document.getElementById("loanBalance").textContent = user.loanBalance.toLocaleString();
+  showMessage("loanMsg", `✅ ₦${amount.toLocaleString()} loan received.`);
 }
 
-// Load transaction history
+// === REPAY LOAN ===
+function repayLoan() {
+  const amount = parseFloat(document.getElementById("repayAmount").value);
+
+  if (isNaN(amount) || amount <= 0) {
+    return showMessage("repayMsg", "⚠️ Enter a valid repayment amount.");
+  }
+
+  if (amount > user.balance) {
+    return showMessage("repayMsg", "❌ Insufficient funds to repay.");
+  }
+
+  if (amount > user.loanBalance) {
+    return showMessage("repayMsg", "⚠️ You're trying to repay more than you owe.");
+  }
+
+  user.balance -= amount;
+  user.loanBalance -= amount;
+
+  user.history = user.history || [];
+  user.history.push({ type: "Loan Repayment", amount, date: new Date().toLocaleString() });
+
+  localStorage.setItem("smarxx_users", JSON.stringify(users));
+  document.getElementById("balanceDisplay").textContent = user.balance.toLocaleString();
+  document.getElementById("loanBalance").textContent = user.loanBalance.toLocaleString();
+  showMessage("repayMsg", `✅ You repaid ₦${amount.toLocaleString()}.`);
+}
+
+// === HISTORY ===
 function loadHistory() {
   const historyDiv = document.getElementById("historyList");
   historyDiv.innerHTML = "";
@@ -100,12 +186,19 @@ function loadHistory() {
 
   user.history.slice().reverse().forEach(tx => {
     const p = document.createElement("p");
-    p.textContent = `${tx.date} – ${tx.type} ₦${tx.amount.toLocaleString()} ${tx.to ? "to " + tx.to : tx.from ? "from " + tx.from : ""}`;
+    p.textContent = `${tx.date} - ${tx.type} ₦${tx.amount.toLocaleString()} ${tx.to ? "to " + tx.to : tx.from ? "from " + tx.from : ""}`;
     historyDiv.appendChild(p);
   });
 }
 
-// Load admin panel
+// === VIRTUAL CARD ===
+function generateCardNumber() {
+  return "5364 " + Math.floor(1000 + Math.random() * 9000) + " " +
+         Math.floor(1000 + Math.random() * 9000) + " " +
+         Math.floor(1000 + Math.random() * 9000);
+}
+
+// === ADMIN PANEL ===
 function loadAdminPanel() {
   const adminDiv = document.getElementById("adminList");
   adminDiv.innerHTML = "";
@@ -117,20 +210,13 @@ function loadAdminPanel() {
   });
 }
 
-// Virtual card number generator
-function generateCardNumber() {
-  return "5364 " + Math.floor(1000 + Math.random() * 9000) + " " +
-         Math.floor(1000 + Math.random() * 9000) + " " +
-         Math.floor(1000 + Math.random() * 9000);
-}
-
-// Logout
+// === LOGOUT ===
 function logoutUser() {
   localStorage.removeItem("smarxx_loggedIn");
   window.location.href = "landing.html";
 }
 
-// Show timed message
+// === MESSAGE UTILITY ===
 function showMessage(id, text, duration = 3000) {
   const el = document.getElementById(id);
   el.textContent = text;
@@ -138,27 +224,25 @@ function showMessage(id, text, duration = 3000) {
   setTimeout(() => el.style.opacity = 0, duration);
 }
 
-// Hide admin if not "admin"
-if (currentUserName.toLowerCase() !== "admin") {
-  document.getElementById("adminPanelBtn").style.display = "none";
-}
-
-// Scroll-based triggers for history/admin
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      if (entry.target.id === "history") loadHistory();
-      if (entry.target.id === "admin" && currentUserName.toLowerCase() === "admin") {
-        loadAdminPanel();
-      }
-    }
-  });
-}, { threshold: 0.3 });
-
-observer.observe(document.getElementById("history"));
-observer.observe(document.getElementById("admin"));
-// === ADMIN BADGE ===
+// === SUPER ADMIN BADGE + PANEL LOGIC ===
 const badge = document.getElementById("adminBadge");
+const adminBtn = document.getElementById("adminPanelBtn");
+const adminSection = document.getElementById("admin");
+
 if (user.name.toLowerCase() === "admin") {
   badge.innerHTML = "👑 <span class='super-badge'>Super Admin</span>";
+  if (adminSection) adminSection.classList.remove("hidden");
+  if (adminBtn) adminBtn.style.display = "block";
+} else {
+  if (adminSection) adminSection.remove();
+  if (adminBtn) adminBtn.remove();
 }
+
+// === FALLBACK: LOAD ADMIN PANEL IF SECTION IS VISIBLE ===
+document.addEventListener("DOMContentLoaded", () => {
+  if (user.name.toLowerCase() === "admin") {
+    const adminVisible = !adminSection.classList.contains("hidden");
+    if (adminVisible) loadAdminPanel();
+  }
+});
+

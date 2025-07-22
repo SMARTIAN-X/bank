@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome to SMARXX BANK</title>
+  <title>SMARXX BANK - Auth</title>
   <style>
     * {
       margin: 0;
@@ -63,11 +63,16 @@
       background: #003f88;
     }
 
-    .toggle {
+    .toggle, .forgot-link {
       text-align: center;
       margin-top: 1rem;
       font-size: 0.9rem;
       color: #444;
+    }
+
+    .forgot-link a {
+      color: #0056b3;
+      text-decoration: none;
     }
 
     .message {
@@ -78,6 +83,35 @@
       margin-bottom: 1rem;
       transition: opacity 0.3s ease-in-out;
     }
+
+    .hidden {
+      display: none;
+    }
+
+
+  .toggle, .forgot-link {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #444;
+  }
+
+  .toggle a,
+  .forgot-link a {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .toggle a:hover,
+  .forgot-link a:hover {
+    text-decoration: underline;
+  }
+
+  .hidden {
+    display: none;
+  }
+
   </style>
 </head>
 <body>
@@ -86,25 +120,58 @@
     <h2 id="formTitle">Register</h2>
     <div class="message" id="formMsg"></div>
 
-    <input type="text" id="nameInput" placeholder="Name" />
-    <input type="password" id="passwordInput" placeholder="Password" />
-    <button onclick="handleSubmit()">Register</button>
+    <!-- Login / Register -->
+    <div id="mainForm">
+      <input type="text" id="nameInput" placeholder="Name" />
+      <input type="password" id="passwordInput" placeholder="Password" />
+      <button onclick="handleSubmit()">Register</button>
 
-    <div class="toggle">
-      <span id="toggleText">Already have an account?</span>
-      <a href="#" onclick="toggleForm()"> Login</a>
+      <div class="toggle">
+        <span id="toggleText">Already have an account?</span>
+        <a href="#" onclick="toggleForm()"> Login</a>
+      </div>
+
+      <div class="forgot-link">
+        <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+      </div>
+    </div>
+
+    <!-- Forgot Password -->
+    <div id="forgotForm" class="hidden">
+      <input type="text" id="forgotName" placeholder="Enter Your Name" />
+      <input type="password" id="newForgotPass" placeholder="New Password" />
+      <button onclick="resetPassword()">Reset Password</button>
+      <div class="toggle">
+        <a href="#" onclick="hideForgotPassword()">← Back to Login</a>
+      </div>
     </div>
   </div>
 
   <script>
     let isLogin = false;
 
-    function toggleForm() {
-      isLogin = !isLogin;
-      document.getElementById('formTitle').textContent = isLogin ? "Login" : "Register";
-      document.querySelector('button').textContent = isLogin ? "Login" : "Register";
-      document.getElementById('toggleText').textContent = isLogin ? "Don't have an account?" : "Already have an account?";
-      document.getElementById('formMsg').textContent = '';
+  function toggleForm() {
+  isLogin = !isLogin;
+  document.getElementById('formTitle').textContent = isLogin ? "Login" : "Register";
+  document.querySelector('#mainForm button').textContent = isLogin ? "Login" : "Register";
+  document.getElementById('toggleText').textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+  document.querySelector('#mainForm .toggle a').textContent = isLogin ? "Register" : "Login";
+  document.getElementById("formMsg").textContent = '';
+}
+
+
+    function showForgotPassword() {
+      document.getElementById("mainForm").classList.add("hidden");
+      document.getElementById("forgotForm").classList.remove("hidden");
+      document.getElementById("formTitle").textContent = "Reset Password";
+      document.getElementById("formMsg").textContent = '';
+    }
+
+    function hideForgotPassword() {
+      document.getElementById("forgotForm").classList.add("hidden");
+      document.getElementById("mainForm").classList.remove("hidden");
+      document.getElementById("formTitle").textContent = isLogin ? "Login" : "Register";
+      document.getElementById("formMsg").textContent = '';
     }
 
     function handleSubmit() {
@@ -132,12 +199,48 @@
         if (exists) {
           msg.textContent = "❌ Name already taken.";
         } else {
-          users.push({ name, password: pass });
+          const isAdmin = name.toLowerCase() === "admin";
+          const newUser = {
+            name,
+            password: pass,
+            accountNumber: "SMX" + Math.floor(1000000000 + Math.random() * 9000000000),
+            balance: isAdmin ? 999999999999 : 50000,
+            loanBalance: 0,
+            history: [],
+            cardNumber: ""
+          };
+          users.push(newUser);
           localStorage.setItem("smarxx_users", JSON.stringify(users));
           localStorage.setItem("smarxx_loggedIn", name);
           window.location.href = "index.html";
         }
       }
+    }
+
+    function resetPassword() {
+      const name = document.getElementById("forgotName").value.trim();
+      const newPass = document.getElementById("newForgotPass").value.trim();
+      const msg = document.getElementById("formMsg");
+
+      if (!name || !newPass) {
+        msg.textContent = "⚠️ All fields required.";
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem("smarxx_users")) || [];
+      const user = users.find(u => u.name === name);
+
+      if (!user) {
+        msg.textContent = "❌ User not found.";
+        return;
+      }
+
+      user.password = newPass;
+      localStorage.setItem("smarxx_users", JSON.stringify(users));
+    msg.textContent = "✅ Password reset successful. Please login.";
+setTimeout(() => {
+  hideForgotPassword();
+}, 1500);
     }
   </script>
 
